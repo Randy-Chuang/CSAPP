@@ -1,0 +1,34 @@
+Creating producer thread
+Creating consumer thread
+Wrapped worker thread called. Going to sleep for 26836
+Wrapped worker thread called. Going to sleep for 53520
+Producer trying producer_lock
+Intercepted the call to pthread_mutex_lock
+Consumer trying consumer_lock
+Intercepted the call to pthread_mutex_lock
+Producer got producer_lock
+Production Done! Item ready
+Producer gave up producer_lock
+Producer trying consumer_lock
+Intercepted the call to pthread_mutex_lock
+Consumer got consumer_lock
+Consumer cond waiting for item_ready
+Inside __wrap_pthread_cond_wait. Intercepted the call to pthread_cond_wait
+Intercepted the call to pthread_mutex_lock
+Producer got consumer_lock
+Producer signalling Consumer
+Producer gave up consumer_lock
+Producer trying producer_lock
+Intercepted the call to pthread_mutex_lock
+Producer got producer_lock
+Producer cond waiting for free space
+Inside __wrap_pthread_cond_wait. Intercepted the call to pthread_cond_wait
+Intercepted the call to pthread_mutex_lock
+Locked the mutex again
+Inside the run-time interposed wrapper of pthread_cond_wait. Intercepted the call to pthread_cond_wait
+Intercepted the call to pthread_mutex_lock
+Locked the mutex again
+Inside the run-time interposed wrapper of pthread_cond_wait. Intercepted the call to pthread_cond_wait
+Intercepted the call to pthread_mutex_lock
+Locked the mutex again
+Locked the mutex again

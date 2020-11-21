@@ -1,3 +1,7 @@
+# Unrelated directories 
+code_test/
+.vscode/
+
 # Prerequisites
 *.d
 
