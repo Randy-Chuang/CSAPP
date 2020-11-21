@@ -26,10 +26,10 @@ queue_t *q_new()
 {
     queue_t *q =  malloc(sizeof(queue_t));
     /* q stores a non-NULL address, we can visit the memory block and initialize the structure */
-    if(q){
-      q->head = q->tail = NULL;
-      q->size = 0;
-    }
+    if(!q)
+      return NULL;
+    q->head = q->tail = NULL;
+    q->size = 0;
     /* If malloc return a NULL pointer, then we would skip the initialization and return NULL (q) */
     return q;
 }
@@ -41,13 +41,11 @@ void q_free(queue_t *q)
     /* Free queue structure */
     if(!q)
       return;
-    list_ele_t *temp = q->head, *curr = NULL;
-    while(temp){
-      curr = temp;
-      temp = temp->next;
-      if(curr->value)
-        free(curr->value);
-      free(curr);
+    list_ele_t *front = NULL;
+    for(list_ele_t *tmp = q->head; tmp; tmp = front){
+        front = tmp->next;
+        free(tmp->value);
+        free(tmp);
     }
     free(q);
 }
