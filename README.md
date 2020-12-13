@@ -22,21 +22,84 @@ Color:
 ## Data Representation and Manipulating Information (Ch 2, Lec 2~4)
 
 - Overview: 
-    The most important 3 representation for numbers are: **Unsigned integer**, **Signed integer** and **Floating-point**.
+    3 representation for numbers: **Unsigned integer**, **Signed integer** and **Floating-point**.
     - Something in common:
-        1. They use fixed size of bits to represent integer or real number. Therefore, after arithmetic operation, the result may be overflow.
+        1. Using fixed size of bits, the result after arithmetic operation may be overflow.
     - Something different: 
         1. Overflow: 
-            - Floating-point: If overflow occurs while performing floating-point arithmetic with 2 positive (negative) numbers, the result could only be infinity $\infty$ (negative infinity $-\infty$).
-            - Signed/Unsigned integer: Producing overflow result according to **integer modular arithmetic**.
+            - Integer: Producing overflow result according to **integer modular arithmetic** (Ring theory).
+            - Floating-point: Overflow to positive infinity $\infty$ (or negative infinity $-\infty$).
         2. Associativity and distributivity: 
-            Floating-point arithmetic doesn't follow these 2 properties. The reason is in compared to integer representations, floating-point representations can encode a wide rage of values, but only approximately.
-- Lec 2: (slide, reading)
+            Floating-point arithmetic doesn't follow these 2 properties. The reason compared to integer representations is that floating-point representation can encode a wide rage of values, but only approximately.
+- Endianness
+    - Big Endian: Least significant byte has highest address.
+    - Little Endian: Least significant byte has lowest address.
+
+    ![](https://i.imgur.com/pMZpXAB.png)
+
+### Integer
+
+- Representation 
+    Two's Complement for **signed integer**.
+    - Conversion and casting: Keep bit field and reinterpret with different representation.
+        <font color="#ff0000"> **Signed** value implicitly cast int o **Unsigned**. </font> 
+    - Expanding bit representation of integer number
+        - Zero extension: Unsigned.
+        - Signed extension: Signed.
+    - Truncation
+        - Unsigned: $x' = x\ mod 2^k$
+        - Signed: $x' = U2T_k(x\ mod 2^k)$
+- Integer Arithmetics
+    - Negatioin of **Signed** integer (Two's complement) 
+        $-^t_x = \begin{cases} TMin_w, & \ x = TMin_w \\ -x, & \ x>TMin_w \end{cases}$
+- Shifting: 
+    - Left shifting $k$: Multiplying by $2^k$.
+    - Right shifting:
+        - Logical shifting: Division for unsigned.
+        - Arithmetic shifting: 
+            - Simply shifting: Rounding to infinity.
+            - Correct division by $2^k$: Rounding to 0.
+                Adding bias $2^k-1$ before shifting.
+                In C: `(x + (1<<k) - 1) >> k`
+- Cautions about:
     - Signed or Unsigned for `char`:
-        It's not specified by the standard. In practice, be sure to use `signed char` or `unsigned char`.
-        https://wiki.sei.cmu.edu/confluence/display/c/INT07-C.+Use+only+explicitly+signed+or+unsigned+char+type+for+numeric+values
-    - 2.1.3 addressing and byte ordering 
-        Big endian and little endian
+        It's not specified by the standard. In practice, be sure to use `signed char` or `unsigned char`. - [CMU SEI: INT07-C. Use only explicitly char type for numeric values](https://wiki.sei.cmu.edu/confluence/display/c/INT07-C.+Use+only+explicitly+signed+or+unsigned+char+type+for+numeric+values)
+    - Operation combining with **Signed** and **Unsigned** integer (casting)
+        <font color="#ff0000"> **Signed** value implicitly cast int o **Unsigned**. </font> 
+    - Implicit casting 
+    - Returned data type by functions.
+
+### Floating Point
+
+- Representation (IEEE 754)
+    Formula: values = $(-1)^s \times M \times 2^E$
+    - Different fields:
+        - $s$: signed bit.
+        - $exp$: field for calculating $E$.
+        - $frac_2$: field for calculating $M$.
+        - $Bias$: $2^{k-1} - 1$, where $k$ is the length of $exp$ field.
+
+    ![](https://i.imgur.com/Jq5a7ny.png)
+    - 3 kinds of values: 
+        - Normalized (steps getting larger while leaving 0)
+            When $exp \neq 000...0\ and\ 111...1$
+            $E = exp - Bias$
+            $M = 1.frac_2$
+        - Denormalized (equal steps)
+            When $exp = 000...0$
+            $E = 1 - Bias$
+            $M = 0.frac_2$
+        - special number
+            When $exp = 111...1$
+            $frac_2 = 000...0 \rightarrow$ infinity (positive or negative)
+            $frac_2 =\neq 000...0 \rightarrow$ Nan (Not-a-number) 
+        
+        ![](https://i.imgur.com/NgzXKDF.png)
+    - Rounding
+      ![](https://i.imgur.com/nUPU832.png)
+      - $0.RXXX > 0.5 \rightarrow$ Rounding up.
+      - $0.RXXX < 0.5 \rightarrow$ Rounding down.
+      - $0.RXXX = 0.5 \rightarrow$ Rounding to nearest even.
 
 ## Machine-Level Programming (x86-64, Ch3, Lec 5~9)
 
