@@ -143,9 +143,11 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  int g1 = ~(x & (~y));
-  int g2 = ~((~x) & y);
-  return ~(g1 & g2);
+  // Apply De Morgan's laws: (x & ~y) | (~x & y)
+  // return ~(~(x & ~y) & ~(~x & y)); // Costing 8 operators.
+
+  // Thinking in different way, performing not operation on XNOR gate: ~((x & y) | (~x & ~y))
+  return ~(x & y) & ~(~x & ~y); // Costing only 7 operators.
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -165,8 +167,10 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  // Adding 0x01 to variable and determine it is Tmin or not (Tmin => left shift 1 bit position would produce 0, except for 0).
+  // Adding 0x01 to variable and determining is it Tmin or not.
+  // (Tmin => left shift 1 bit position would produce 0, except for 0)
   x = x + 0x01;
+  // return !(x + x) & !(!x); // Applying De Morgan's law.
   return !((x + x) | (!x));
 }
 /* 
@@ -178,6 +182,7 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
+  // Retaining all the odd bits and determining is it equivalent to 0xAAAAAAAA.
   int mask = 0xAA;
   mask = (mask << 8) + mask;
   mask = (mask << 16) + mask;
@@ -191,6 +196,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
+  // 2's complement negation.
   return ~x + 1;
 }
 //3
@@ -204,9 +210,11 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  int a = !((x >> 4) ^ 0x03);
-  int b = (((x & 0x0E) + (~0x09)) >> 31);
-  return a & b;
+  // AsciiDigit x in range of 0x30 ~ 0x39
+  // x - 0x30 >= 0
+  // 0x39 - x >= 0
+  // return !(((x + ~0x2F) >> 31) | ((0x3A + ~x) >> 31));
+  return !(((x + ~0x2F) | (0x3A + ~x)) >> 31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -217,9 +225,9 @@ int isAsciiDigit(int x) {
  */
 int conditional(int x, int y, int z) {
   /* Mask for variable y (generating process):
-   * 1. x             = non-zero  or  0
-   * 2. !x            = 0         or  1
-   * 3. Adding 0xF..F = 0xF..F    or  0x0..0
+   * 1. x                   = non-zero  or  0
+   * 2. !x                  = 0         or  1
+   * 3. Adding Tmax(0xF..F) = 0xF..F    or  0x0..0
    */
   int mask_x = !x + (~0x00);
   return (mask_x & y) + ((~mask_x) & z);
@@ -232,6 +240,11 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
+  // Checking for only 2 situations:
+  // 1. If they have different sign, if so, is x negative? (part a.)
+  // 2. They have the same sign, determining if y-x is negative or not? (part b.)
+  // Combining part a. and part b.
+
   // int diff_sign = !(x >> 31) ^ !(y >> 31);
   // int a = diff_sign & (x >> 31);
   // int b = !diff_sign & !((y + (~x) + 1) >> 31); 
@@ -255,6 +268,8 @@ int logicalNeg(int x) {
   // 1. Negative (>>31)=> 0xf..f (adding 1)=> 0
   // 2. Positive (transforming to negative)
   // 3. Zero (negate)=> still 0 (adding 1)=> 1
+  // This method aims to spread the sign bit (1) to the whole variable for non-zero input. 
+  // And adding 1 to -1 (0xF..F) produces 0. On the other hand, adding 1 to 0 produces 1.
   // return ((x >> 31) | ((~x + 1) >> 31)) + 1;
   return ((x | (~x + 1)) >> 31) + 1;
 }
@@ -273,7 +288,7 @@ int logicalNeg(int x) {
 int howManyBits(int x) {
   int c, m1, m2, m3, m4, m5;
 
-  // Performing bitwise negation on negative value. Example: -1 => 0
+  // Performing bitwise negation on negative value (Non-negative values don't change). Example: -1 => 0
   x = x ^ (x>>31);
 
   // Set all bits that are lower than highest set bit to 1. Example: 0x50 => 0x7F
@@ -284,20 +299,35 @@ int howManyBits(int x) {
   x |= (x >> 16);
 
   // Bit count (summing all the bits)
+  // m1 = 0x55555555
+  // m2 = 0x33333333
+  // m3 = 0x0F0F0F0F
+  // m4 = 0x00FF00FF
+  // m5 = 0x0000FFFF
   m1 = (0x55 << 8) + 0x55;
   m1 = (m1 << 16) + m1;
   m2 = (0x33 << 8) + 0x33;
   m2 = (m2 << 16) + m2;
   m3 = (0x0F << 8) + 0x0F;
   m3 = (m3 << 16) + m3;
-  m4 = (0xFF << 16) + 0xFF;
-  m5 = (0xFF << 8) + + 0xFF;
+  // m4 = (0xFF << 16) + 0xFF;
+  // m5 = (0xFF << 8) + 0xFF;
 
+  // Counting set bits (Naive version)
+  // c = (x & m1) + ((x >> 1) & m1);
+  // c = (c & m2) + ((c >> 2) & m2);
+  // c = (c & m3) + ((c >> 4) & m3);
+  // c = (c & m4) + ((c >> 8) & m4);
+  // c = (c & m5) + ((c >> 16)& m5);
+
+  // Counting set bits (Version 2: Ignoring the parts that won't affect the result 
+  // and performing AND operation to remove those carrying part at the end of this process)
   c = (x & m1) + ((x >> 1) & m1);
   c = (c & m2) + ((c >> 2) & m2);
-  c = (c & m3) + ((c >> 4) & m3);
-  c = (c & m4) + ((c >> 8) & m4);
-  c = (c & m5) + ((c >> 16)& m5);
+  c = (c + (c >> 4)) & m3;
+  c += (c >> 8);
+  c += (c >> 16);
+  c &= 0x3F;
 
   // Adding the extra sign bit. 
   return c + 1;
@@ -319,6 +349,7 @@ unsigned floatScale2(unsigned uf) {
   unsigned int exp = (uf >> 23) & 0xFF;
   unsigned int frac = uf & ~(0x1ff << 23);
   
+  // Denormalized. 
   if(exp == 0x00){
     frac <<= 1;
     // Jumping to normalized section (leading 1 in formula). 
@@ -327,9 +358,11 @@ unsigned floatScale2(unsigned uf) {
       exp = 0x01;
     }
   }
+  // Special number. 
   else if(exp == 0xFF){
-    // Do nothing!
+    // Do nothing! 
   }
+  // Normalized. 
   else{
     exp++;
   }
@@ -349,16 +382,21 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  // In C and C++, the rule of casting from floating point to integer is rounding off. (not rounding up or rounding to nearest even)
+  // In C and C++, the rule of casting from floating point to integer is rounding off. 
+  // (not rounding up or rounding to nearest even)
   unsigned int sign = uf >> 31; // unsigned => Logical shift
   int exp = (uf >> 23) & 0xFF;
   unsigned int frac = uf & ~(0x1ff << 23);
   int result, E, Bias = 127; 
 
+  // Exponent to small. (rounding to 0)
   if(exp < Bias){
     result = 0;
   }
-  else if(exp - Bias > 31){
+  // Two cases:
+  // 1. Exponent too large.
+  // 2. Negative value: - 2^31.
+  else if(exp - Bias >= 31){
     result = 0x80000000u;
   }
   else{
@@ -372,10 +410,10 @@ int floatFloat2Int(unsigned uf) {
     else if(E < 0){
       result >>= (-E);
     }
-
     // Dealing with sign. Tmin (overflew or not) would still be converted to Tmin.
     if(sign) result = -result;
   }
+
   return result;
 }
 /* 
@@ -396,17 +434,20 @@ unsigned floatPower2(int x) {
   int Bias = 127;
   int exp = x + Bias;
   unsigned result;
-  // printf("exp: %d", exp);
+
+  // Exponent too large to represent. (Infinity)
   if(exp > 254){
     exp = 0xFF;
     result = exp << 23;
   }
+  // Exponent too small to represent. (0)
   else if(exp <= -23){
     result = 0;
   }
   else if(exp > 0){
     result = exp << 23;
   }
+  // Denormalized. (Non-zero fraction: 0.xxxxxxx)
   else{
     result = 1 << (22 + exp);
   }
