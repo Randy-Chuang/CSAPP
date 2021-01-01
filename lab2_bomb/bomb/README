@@ -1,0 +1,68 @@
+Phase 1: Expecting a string 
+    Border relations with Canada have never been better.
+    
+Phase 2: Expecting 6 32-bits numbers
+    1 2 4 8 16 32
+    
+Phase 3: Expecting 2 32-bits numbers (separated by space)
+    Accepted input pair:
+    (0, 207)
+    (1, 311)
+    (2, 707)
+    (3, 256)
+    (4, 389)
+    (5, 206)
+    (6, 682)
+    (7, 327)
+
+Phase 4: Expecting 2 32-bits numbers (v1 v2)
+    The output produce by calling func4(v1, 0, 14) should equal to 0.
+    v1 = 0, 1, 3, 7, etc.
+    v2 = 0.
+
+Phase 5: Expecting a input string with 6 characters.
+    After remapping the characters, the string should be equal to "flyers".
+    
+    Remapping (transformation):
+        index of remapped char = (Ascii code of input char) & 0x0F
+        remapping array(16 chars) = maduiersnfotvbyl
+    
+    indices of expected remapping with the corresponding input characters 
+    index = 9: i y I Y 
+    index = 15: o O 
+    index = 14: n N 
+    index = 5: e u E U 
+    index = 6: f v F V 
+    index = 7: g w G W
+
+    All the permutations following the above sequence are acceptable.
+    e.g. "ionefg", "yonuvw", etc.
+
+Phase 6: Expecting 6 32-bits numbers
+    Input constraint: Any permutation of integers 1 ~ 6.
+    transformation of input array: (7 - itself).
+    Linked list storing the corresponding values:
+        1 => 0x0000014c
+        2 => 0x000000a8
+        3 => 0x0000039c
+        4 => 0x000002b3
+        5 => 0x000001dd
+        6 => 0x000001bb
+
+    After reordering the linked list according to our transformed input, it should be a decreasing order.
+
+    Expected result after reordering:
+        0x0000039c => 3 
+        0x000002b3 => 4 
+        0x000001dd => 5 
+        0x000001bb => 6 
+        0x0000014c => 1 
+        0x000000a8 => 2 
+        --> 3 4 5 6 1 2 (reordered input)
+    
+    Expected input before reordering: (7 - reordered element)
+        --> 4 3 2 1 6 5
+
+Secret phase: After entering secret phase, expecting a integer within range of [1, 1001]. 
+    Performing binary search in BST.
+    Expected input: 22
