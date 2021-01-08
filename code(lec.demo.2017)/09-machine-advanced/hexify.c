@@ -5,8 +5,8 @@
 int main(int argc, char *argv[]) {
     int i;
     for (i = 1; i < argc; i++) {
-	unsigned long dig = strtoul(argv[i], NULL, 16);
-	putchar((char) dig);
+	    unsigned long dig = strtoul(argv[i], NULL, 16);
+	    putchar((char) dig);
     }
     putchar('\n');
     return 0;
